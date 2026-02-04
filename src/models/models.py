@@ -5,7 +5,7 @@ SQLAlchemy Models
 """
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Date, Boolean, 
+    Column, Integer, String, Text, DateTime, Date, Boolean,
     ForeignKey, func
 )
 from sqlalchemy.orm import relationship
@@ -18,7 +18,7 @@ from ..database import Base
 class BlogImage(Base):
     """블로그 이미지 모델"""
     __tablename__ = "blog_blogimage"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     image = Column(String(500), nullable=False)
@@ -28,7 +28,7 @@ class BlogImage(Base):
 class BlogPost(Base):
     """블로그 포스트 모델"""
     __tablename__ = "blog_blogpost"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     title = Column(String(255), nullable=False)
@@ -43,7 +43,7 @@ class BlogPost(Base):
 class HrComment(Base):
     """HR 댓글 모델"""
     __tablename__ = "hrjang_hrcommentmodel"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     userid = Column(String(10), nullable=False)
     password = Column(String(20), nullable=False)
@@ -57,7 +57,7 @@ class HrComment(Base):
 class HSKModel(Base):
     """HS 코드 매칭 모델"""
     __tablename__ = "hskmap_hskmodel"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     desc = Column(String(10000), nullable=False)
     isic_code = Column(String(10), nullable=True)
@@ -69,7 +69,7 @@ class HSKModel(Base):
 class LawListCrawledData(Base):
     """법률 목록 크롤링 데이터"""
     __tablename__ = "lawchaser_lawlistcrawleddata"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     ls_id = Column(String(10), nullable=False)
     law_name = Column(String(30), nullable=False)
@@ -85,7 +85,7 @@ class LawListCrawledData(Base):
 class LawOldNewCrawledData(Base):
     """법률 구/신 조문 크롤링 데이터"""
     __tablename__ = "lawchaser_lawoldnewcrawleddata"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     lsi_seq = Column(String(10), nullable=False)
     ls_id = Column(String(10), nullable=False)
@@ -99,7 +99,7 @@ class LawOldNewCrawledData(Base):
 class RaraModel(Base):
     """Rara AI 응답 모델"""
     __tablename__ = "rara_raramodel"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     model = Column(String(30), nullable=False)
     analysis_model = Column(String(30), nullable=True)
@@ -116,7 +116,7 @@ class RaraModel(Base):
 class RaraSurvey(Base):
     """Rara 설문 모델"""
     __tablename__ = "rara_rarasurvey"
-    
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(30), nullable=False)
     organization = Column(String(30), nullable=False)

@@ -32,10 +32,10 @@ async def basic_response(
     """기본 AI 응답 생성"""
     try:
         from ..core.nlp_model.model import ReviewResponder
-        
+
         # ReviewResponder 인스턴스 생성
         responder = ReviewResponder()
-        
+
         # response_method에 따른 처리
         if request.response_method == "basic":
             response = responder.get_response(
@@ -56,7 +56,7 @@ async def basic_response(
                 request.analysis_model or "RAAM",
                 "nocot",
             )
-        
+
         # DB 저장
         rara_record = RaraModel(
             model=request.model,
@@ -69,9 +69,9 @@ async def basic_response(
         )
         db.add(rara_record)
         await db.commit()
-        
+
         return RaraBasicResponse(Response=response)
-        
+
     except ImportError:
         # NLP 모델이 없는 경우 기본 응답
         return RaraBasicResponse(
@@ -89,9 +89,9 @@ async def custom_response(
     """커스텀 AI 응답 생성"""
     try:
         from ..core.nlp_model.model import ReviewResponder
-        
+
         responder = ReviewResponder()
-        
+
         # response_method에 따른 처리
         if request.response_method == "custom":
             # 커스텀 응답만
@@ -103,9 +103,9 @@ async def custom_response(
                 contact=request.contact,
                 retrieval=request.retrieval,
             )
-            
+
             return RaraCustomResponse(Response=custom_resp)
-            
+
         elif request.response_method in ["final", "multi"]:
             # 일반 응답 + 커스텀 응답
             normal_resp = responder.get_response(
@@ -121,7 +121,7 @@ async def custom_response(
                 contact=request.contact,
                 retrieval=request.retrieval,
             )
-            
+
             # DB 저장
             rara_record = RaraModel(
                 model=request.model,
@@ -137,12 +137,12 @@ async def custom_response(
             )
             db.add(rara_record)
             await db.commit()
-            
+
             return RaraCustomResponse(Response=normal_resp, Custom_Response=custom_resp)
-        
+
         else:
             return RaraCustomResponse(Response="Invalid response_method")
-            
+
     except ImportError:
         return RaraCustomResponse(
             Response="NLP 모델이 로드되지 않았습니다."
@@ -169,14 +169,14 @@ async def save_rating(
         )
     )
     record = result.scalar_one_or_none()
-    
+
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
-    
+
     # 평점 업데이트
     record.user_rating = request.user_rating
     await db.commit()
-    
+
     return SuccessResponse()
 
 
@@ -197,5 +197,5 @@ async def save_survey(
     )
     db.add(survey)
     await db.commit()
-    
+
     return SuccessResponse()

@@ -33,13 +33,13 @@ def review_analyzer(
 ) -> Dict[str, str]:
     """
     리뷰 분석을 수행하는 모듈
-    
+
     Args:
         user_review: 사용자 리뷰 텍스트
         analyzer_prompt_number: 분석 프롬프트 번호
         analyzer_temperature: 모델 온도
         model_name: 사용할 OpenAI 모델
-        
+
     Returns:
         분석 결과 (User_Sentiment, User_Emotion, User_Intention)
     """
@@ -50,10 +50,10 @@ def review_analyzer(
     ])
 
     analyzer_model = ChatOpenAI(
-        model=model_name, 
+        model=model_name,
         temperature=analyzer_temperature
     ).bind(function_call={"name": "Describer"}, functions=function_prompt)
-    
+
     runnable = (
         {"analysis": RunnablePassthrough()}
         | analyzer_prompt
@@ -71,18 +71,18 @@ def norm_responder(
 ) -> str:
     """
     기본 답변모듈 - 프롬프트 없이 단순 응답
-    
+
     Args:
         user_review: 사용자 리뷰
         responder_temperature: 모델 온도
         model_name: 사용할 모델
-        
+
     Returns:
         응답 텍스트
     """
     responder_model = ChatOpenAI(model=model_name, temperature=responder_temperature)
     norm_prompt = ChatPromptTemplate.from_messages([
-        ("system", "Respond to review"), 
+        ("system", "Respond to review"),
         ("human", "{review}")
     ])
 
@@ -114,7 +114,7 @@ def responder_nocot(
         response_chain = (
             responder_prompt
             | responder_model.bind(
-                function_call={"name": "Responder"}, 
+                function_call={"name": "Responder"},
                 functions=responder_function
             )
             | JsonOutputFunctionsParser()
@@ -128,7 +128,7 @@ def responder_nocot(
     except Exception as e:
         print(f"Responding Error: {e}")
         response = {"Response": "Responding Error"}
-        
+
     return response
 
 
@@ -161,7 +161,7 @@ def responder_basic(
                 }
                 | responder_prompt
                 | responder_model.bind(
-                    function_call={"name": "Responder"}, 
+                    function_call={"name": "Responder"},
                     functions=responder_function
                 )
                 | JsonOutputFunctionsParser()
@@ -180,7 +180,7 @@ def responder_basic(
             response_chain = (
                 responder_prompt
                 | responder_model.bind(
-                    function_call={"name": "Responder"}, 
+                    function_call={"name": "Responder"},
                     functions=responder_function
                 )
                 | JsonOutputFunctionsParser()
@@ -229,7 +229,7 @@ def responder_com_name(
                 }
                 | responder_prompt
                 | responder_model.bind(
-                    function_call={"name": "Responder"}, 
+                    function_call={"name": "Responder"},
                     functions=responder_function
                 )
                 | JsonOutputFunctionsParser()
@@ -249,7 +249,7 @@ def responder_com_name(
             response_chain = (
                 responder_prompt
                 | responder_model.bind(
-                    function_call={"name": "Responder"}, 
+                    function_call={"name": "Responder"},
                     functions=responder_function
                 )
                 | JsonOutputFunctionsParser()
@@ -286,7 +286,7 @@ def responder_cc(
     responder_prompt = response_prompt_selector(3, rag=rag)
     responder_model = ChatOpenAI(model=model_name, temperature=responder_temperature)
     responder_function = Response_output_selector(prompt_num=3)
-    
+
     if rag and vectorstore_retriever:
         try:
             response_chain = (
@@ -301,7 +301,7 @@ def responder_cc(
                 }
                 | responder_prompt
                 | responder_model.bind(
-                    function_call={"name": "Responder"}, 
+                    function_call={"name": "Responder"},
                     functions=responder_function
                 )
                 | JsonOutputFunctionsParser()
@@ -322,7 +322,7 @@ def responder_cc(
             response_chain = (
                 responder_prompt
                 | responder_model.bind(
-                    function_call={"name": "Responder"}, 
+                    function_call={"name": "Responder"},
                     functions=responder_function
                 )
                 | JsonOutputFunctionsParser()
@@ -338,7 +338,7 @@ def responder_cc(
         except Exception as e:
             print(f"Responding Error: {e}")
             response = {"Response": "Responding Error"}
-            
+
     return response
 
 
@@ -363,7 +363,7 @@ def responder_cgc(
         response_chain = (
             responder_prompt
             | responder_model.bind(
-                function_call={"name": "Responder"}, 
+                function_call={"name": "Responder"},
                 functions=responder_function
             )
             | JsonOutputFunctionsParser()
@@ -379,7 +379,7 @@ def responder_cgc(
     except Exception as e:
         print(f"Responding Error: {e}")
         response = {"Response": "Responding Error"}
-        
+
     return response
 
 
@@ -398,47 +398,47 @@ def review_analyzer_zerocot(
     Zero-shot CoT를 활용한 분석 및 응답
     """
     print("Analysis Start")
-    
+
     analyzer_prompt = ChatPromptTemplate.from_messages([
         ("system", "Analyze the sentiment, emotion, and intention in the user's review. Step by step."),
         ("human", "{review}"),
     ])
 
     analyzer_model = ChatOpenAI(
-        model=analysis_model_name, 
+        model=analysis_model_name,
         temperature=analyzer_temperature
     ).bind(
-        function_call={"name": "Describer"}, 
+        function_call={"name": "Describer"},
         functions=[output_function(prompt_name="total_extraction")]
     )
-    
+
     analyzer_chain = (
-        {"review": RunnablePassthrough()} 
-        | analyzer_prompt 
-        | analyzer_model 
+        {"review": RunnablePassthrough()}
+        | analyzer_prompt
+        | analyzer_model
         | JsonOutputFunctionsParser()
     )
     analyzer_result = analyzer_chain.invoke({"review": user_review})
 
     print("Analyze Level of Urgency")
-    
+
     urgency_prompt = ChatPromptTemplate.from_messages([
         ("system", "As a review manager, assess how urgent it is to respond to a given customer's review."),
         ("human", "{review}"),
     ])
 
     urgency_model = ChatOpenAI(
-        model=analysis_model_name, 
+        model=analysis_model_name,
         temperature=analyzer_temperature
     ).bind(
-        function_call={"name": "Describer"}, 
+        function_call={"name": "Describer"},
         functions=[output_function(prompt_name="urgency_level")]
     )
-    
+
     urgency_chain = (
-        {"review": RunnablePassthrough()} 
-        | urgency_prompt 
-        | urgency_model 
+        {"review": RunnablePassthrough()}
+        | urgency_prompt
+        | urgency_model
         | JsonOutputFunctionsParser()
     )
     urgency_result = urgency_chain.invoke({"review": user_review})
@@ -446,23 +446,23 @@ def review_analyzer_zerocot(
     if rag and vectorstore_retriever:
         print("Response: RAG MODE")
         response_prompt = ChatPromptTemplate.from_messages([
-            ("system", 
+            ("system",
              "As a marketing manager managing online customer reviews, write a response to the following 'Review'.\n\n"
              "When composing your reply, consider 'Customer Sentiment', 'Customer Emotion' and 'Customer Intention'. "
              "The given 'Responder Name' and 'Contact Information' must be included. "
              "Additionally, use the following pieces of retrieved context to answer the question \n"
              "Context: {context}"),
-            ("human", 
+            ("human",
              "Responder Name:\n{company_name}\n\nContact:\n{contact}\n\n"
              "Customer Sentiment:\n{sentiment}\n\nCustomer Emotion:\n{emotion}\n\n"
              "Customer Intention:\n{intention}\n\nReview:\n{review}")
         ])
 
         response_model = ChatOpenAI(
-            model=response_model_name, 
+            model=response_model_name,
             temperature=responder_temperature
         ).bind(
-            function_call={"name": "Describer"}, 
+            function_call={"name": "Describer"},
             functions=[output_function(prompt_name="zero_response")]
         )
 
@@ -493,38 +493,38 @@ def review_analyzer_zerocot(
         print("Response: NON-RAG MODE")
 
         response_prompt = ChatPromptTemplate.from_messages([
-            ("system", 
+            ("system",
              "As a marketing manager managing online customer reviews, write a response to the following 'Review'.\n\n"
              "When composing your reply, consider 'Customer Sentiment', 'Customer Emotion' and 'Customer Intention'."),
-            ("human", 
+            ("human",
              "Customer Sentiment:\n{sentiment}\n\nCustomer Emotion:\n{emotion}\n\n"
              "Customer Intention:\n{intention}\n\nReview:\n{review}")
         ])
 
         response_model = ChatOpenAI(
-            model=response_model_name, 
+            model=response_model_name,
             temperature=responder_temperature
         ).bind(
-            function_call={"name": "Describer"}, 
+            function_call={"name": "Describer"},
             functions=[output_function(prompt_name="zero_response")]
         )
-        
+
         response_chain = (
             {
-                "sentiment": RunnablePassthrough(), 
-                "emotion": RunnablePassthrough(), 
-                "intention": RunnablePassthrough(), 
+                "sentiment": RunnablePassthrough(),
+                "emotion": RunnablePassthrough(),
+                "intention": RunnablePassthrough(),
                 "review": RunnablePassthrough()
-            } 
-            | response_prompt 
-            | response_model 
+            }
+            | response_prompt
+            | response_model
             | JsonOutputFunctionsParser()
         )
 
         result = response_chain.invoke({
-            "sentiment": analyzer_result['User_Sentiment'], 
-            "emotion": analyzer_result['User_Emotion'], 
-            "intention": analyzer_result['User_Intention'], 
+            "sentiment": analyzer_result['User_Sentiment'],
+            "emotion": analyzer_result['User_Emotion'],
+            "intention": analyzer_result['User_Intention'],
             "review": user_review
         })
 

@@ -25,10 +25,10 @@ from ...config import settings
 class ReviewResponder:
     """
     리뷰 분석 및 응답 생성 클래스
-    
+
     Django에서 마이그레이션된 ReviewResponder 클래스
     """
-    
+
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -64,18 +64,18 @@ class ReviewResponder:
 
         # API 키 설정
         os.environ["OPENAI_API_KEY"] = self.api_key
-        
+
         # RAG 설정
         if self.rag and self.rag_list:
             self.vectorstore = FAISS.from_texts(
-                self.rag_list, 
+                self.rag_list,
                 embedding=OpenAIEmbeddings()
             )
             self.retriever = self.vectorstore.as_retriever(
                 search_type="similarity_score_threshold",
                 search_kwargs={"k": 5, "score_threshold": 0.4},
             )
-        
+
         # 분석 결과 저장
         self.review_sentiment: Optional[str] = None
         self.review_emotion: Optional[str] = None
@@ -84,11 +84,11 @@ class ReviewResponder:
     def Analysis(self, review_text: str, value_return: bool = False) -> Optional[Dict[str, Any]]:
         """
         리뷰 감성/감정/의도 분석
-        
+
         Args:
             review_text: 분석할 리뷰 텍스트
             value_return: 결과 반환 여부
-            
+
         Returns:
             분석 결과 (value_return=True인 경우)
         """
@@ -116,21 +116,21 @@ class ReviewResponder:
     ) -> str:
         """
         리뷰 응답 생성
-        
+
         Args:
             review_text: 리뷰 텍스트
             method: 응답 메서드 ("normal", "RAAM", "nocot" 등)
             review_sentiment: 감성 (제공하지 않으면 자동 분석)
             review_emotion: 감정 (제공하지 않으면 자동 분석)
             review_intention: 의도 (제공하지 않으면 자동 분석)
-            
+
         Returns:
             생성된 응답 텍스트
         """
         if method == "normal":
             response = norm_responder(
-                review_text, 
-                self.responder_temperature, 
+                review_text,
+                self.responder_temperature,
                 model_name=self.model_name
             )
 
@@ -216,17 +216,17 @@ class ReviewResponder:
 
         else:
             response = norm_responder(
-                review_text, 
-                self.responder_temperature, 
+                review_text,
+                self.responder_temperature,
                 model_name=self.model_name
             )
 
         # 응답이 딕셔너리인 경우 Final_Response 또는 Response 추출
         if isinstance(response, dict):
             return response.get("Final_Response", response.get("Response", str(response)))
-        
+
         return response
-    
+
     def get_response(
         self,
         review_text: str,
@@ -238,7 +238,7 @@ class ReviewResponder:
     ) -> str:
         """
         간편 응답 생성 메서드
-        
+
         Args:
             review_text: 리뷰 텍스트
             analysis_model: 분석 모델 타입
@@ -246,7 +246,7 @@ class ReviewResponder:
             responder_name: 응답자 이름
             contact: 연락처 정보
             retrieval: RAG 컨텍스트
-            
+
         Returns:
             생성된 응답 텍스트
         """
@@ -255,18 +255,18 @@ class ReviewResponder:
             self.responder_name = responder_name
         if contact:
             self.contact = contact
-            
+
         # RAG 설정
         if retrieval:
             self.rag = True
             self.rag_list = [retrieval]
             self.vectorstore = FAISS.from_texts(
-                self.rag_list, 
+                self.rag_list,
                 embedding=OpenAIEmbeddings()
             )
             self.retriever = self.vectorstore.as_retriever(
                 search_type="similarity_score_threshold",
                 search_kwargs={"k": 5, "score_threshold": 0.4},
             )
-        
+
         return self.Response(review_text, method=method)

@@ -28,18 +28,18 @@ def item_extracter(
 ) -> List[str]:
     """
     회사 설명에서 판매 품목 추출
-    
+
     Args:
         text: 회사 설명 텍스트
         model: 사용할 OpenAI 모델
         temperature: 모델 온도
         print_result: 결과 출력 여부
-        
+
     Returns:
         추출된 품목 리스트
     """
     prompt = ChatPromptTemplate.from_messages([
-        ("system", 
+        ("system",
          "The following are descriptions of specific companies. "
          "Figure out what they sell (or offer) and list them all. "
          "Return the results as a comma seperated list."),
@@ -70,12 +70,12 @@ def ChapterSimilarityExtracter(
 ) -> Dict[str, any]:
     """
     LLM으로 제품 카테고리 분류 (15개 섹션)
-    
+
     Args:
         text: 제품명
         model: 사용할 OpenAI 모델
         temperature: 모델 온도
-        
+
     Returns:
         카테고리와 관련도
     """
@@ -96,7 +96,7 @@ def ChapterSimilarityExtracter(
 'Arms and ammunition, miscellaneous manufactured articles, works of art'"""
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", 
+        ("system",
          f"You are an expert in categorizing products (or services) based on given categories. "
          f"Below is a list of 15 categories and the name of a product (or service). "
          f"Please rank the top 1 categories that are most related to that product and provide "
@@ -130,18 +130,18 @@ def LLMSimilarityExtracter(
 ) -> Dict[str, any]:
     """
     동적 카테고리로 제품 분류
-    
+
     Args:
         text: 제품명
         model: 사용할 OpenAI 모델
         temperature: 모델 온도
         category_list: JSON 형식의 카테고리 리스트
-        
+
     Returns:
         카테고리와 관련도
     """
     prompt = ChatPromptTemplate.from_messages([
-        ("system", 
+        ("system",
          "You are an expert in categorizing products (or services) based on given categories. "
          "Below is a list of categories and the name of a product (or service). "
          "Please rank the top 1 categories that are most related to that product and provide "
@@ -176,13 +176,13 @@ def LLMSimilarityExtracter_OutFunc(
 ) -> Dict[str, any]:
     """
     OpenAI Function Calling으로 분류
-    
+
     Args:
         text: 제품명
         model: 사용할 OpenAI 모델
         temperature: 모델 온도
         category_list: JSON 형식의 카테고리 리스트
-        
+
     Returns:
         카테고리와 관련도
     """
@@ -209,7 +209,7 @@ def LLMSimilarityExtracter_OutFunc(
     }]
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", 
+        ("system",
          "You are an expert in categorizing products (or services) based on given categories. "
          "Below is a list of categories and the name of a product (or service). "
          "Please rank the top 1 categories that are most related to that product and provide "
@@ -220,7 +220,7 @@ def LLMSimilarityExtracter_OutFunc(
 
     parser = JsonOutputFunctionsParser()
     llm = ChatOpenAI(model=model, temperature=temperature).bind(
-        function_call={"name": "Categorizer"}, 
+        function_call={"name": "Categorizer"},
         functions=output_function
     )
     chain = prompt | llm | parser

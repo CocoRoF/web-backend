@@ -32,7 +32,7 @@ class LawListResponse(BaseModel):
     unk_var_1: Optional[str] = None
     unk_var_2: Optional[str] = None
     classify: Optional[str] = None
-    
+
     model_config = {"from_attributes": True}
 
 
@@ -40,7 +40,7 @@ class LawOldNewResponse(BaseModel):
     """구/신 조문 응답 스키마"""
     old: str
     new: str
-    
+
     model_config = {"from_attributes": True}
 
 

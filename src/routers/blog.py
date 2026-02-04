@@ -49,7 +49,7 @@ async def get_metadata() -> dict:
     """메타데이터 파일 로드"""
     if not METADATA_FILE.exists():
         return {}
-    
+
     async with aiofiles.open(METADATA_FILE, "r", encoding="utf-8") as f:
         content = await f.read()
         return json.loads(content) if content else {}
@@ -74,13 +74,13 @@ async def upload_image(
     # 업로드 디렉토리 생성
     upload_dir = Path(settings.media_root) / f"user_{name}"
     upload_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # 파일 저장
     file_path = upload_dir / image.filename
     async with aiofiles.open(file_path, "wb") as f:
         content = await image.read()
         await f.write(content)
-    
+
     # DB 저장
     relative_path = user_directory_path(name, image.filename)
     blog_image = BlogImage(
@@ -90,7 +90,7 @@ async def upload_image(
     db.add(blog_image)
     await db.commit()
     await db.refresh(blog_image)
-    
+
     return blog_image
 
 
@@ -111,7 +111,7 @@ async def create_post(
     db.add(blog_post)
     await db.commit()
     await db.refresh(blog_post)
-    
+
     return blog_post
 
 
@@ -123,10 +123,10 @@ async def get_post(
     """특정 블로그 포스트 조회"""
     result = await db.execute(select(BlogPost).where(BlogPost.id == pk))
     post = result.scalar_one_or_none()
-    
+
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
     return post
 
 
@@ -137,13 +137,13 @@ async def list_posts(
 ):
     """블로그 포스트 목록 조회"""
     query = select(BlogPost)
-    
+
     if content_type:
         query = query.where(BlogPost.content_type == content_type)
-    
+
     result = await db.execute(query.order_by(BlogPost.created_at.desc()))
     posts = result.scalars().all()
-    
+
     return BlogPostListResponse(posts=posts, total=len(posts))
 
 
@@ -153,13 +153,13 @@ async def list_posts(
 async def read_markdown(file_name: str = Query(...)):
     """마크다운 파일 읽기"""
     file_path = BLOG_POST_PATH / file_name
-    
+
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     async with aiofiles.open(file_path, "r", encoding="utf-8") as f:
         content = await f.read()
-    
+
     return MarkdownFileResponse(file_name=file_name, content=content)
 
 
@@ -168,13 +168,13 @@ async def create_markdown(data: MarkdownFileCreate):
     """마크다운 파일 생성"""
     BLOG_POST_PATH.mkdir(parents=True, exist_ok=True)
     file_path = BLOG_POST_PATH / data.file_name
-    
+
     if file_path.exists():
         raise HTTPException(status_code=400, detail="File already exists")
-    
+
     async with aiofiles.open(file_path, "w", encoding="utf-8") as f:
         await f.write(data.content)
-    
+
     return {"message": "File created successfully", "file_name": data.file_name}
 
 
@@ -182,13 +182,13 @@ async def create_markdown(data: MarkdownFileCreate):
 async def update_markdown(data: MarkdownFileUpdate):
     """마크다운 파일 수정"""
     file_path = BLOG_POST_PATH / data.file_name
-    
+
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     async with aiofiles.open(file_path, "w", encoding="utf-8") as f:
         await f.write(data.content)
-    
+
     return {"message": "File updated successfully", "file_name": data.file_name}
 
 
@@ -196,12 +196,12 @@ async def update_markdown(data: MarkdownFileUpdate):
 async def delete_markdown(file_name: str = Query(...)):
     """마크다운 파일 삭제"""
     file_path = BLOG_POST_PATH / file_name
-    
+
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     os.remove(file_path)
-    
+
     return {"message": "File deleted successfully"}
 
 
@@ -214,13 +214,13 @@ async def delete_blog_post(file_name: str = Query(...)):
     file_path = BLOG_POST_PATH / file_name
     if file_path.exists():
         os.remove(file_path)
-    
+
     # 메타데이터에서 삭제
     metadata = await get_metadata()
     if file_name in metadata:
         del metadata[file_name]
         await save_metadata(metadata)
-    
+
     return {"message": "Blog post deleted successfully"}
 
 
@@ -246,7 +246,7 @@ async def update_post_metadata(data: MetadataUpdate):
     metadata = await get_metadata()
     metadata[data.file_name] = data.metadata.model_dump()
     await save_metadata(metadata)
-    
+
     return {"message": "Metadata updated successfully"}
 
 
@@ -254,11 +254,11 @@ async def update_post_metadata(data: MetadataUpdate):
 async def delete_post_metadata(file_name: str = Query(...)):
     """특정 포스트 메타데이터 삭제"""
     metadata = await get_metadata()
-    
+
     if file_name in metadata:
         del metadata[file_name]
         await save_metadata(metadata)
-    
+
     return {"message": "Metadata deleted successfully"}
 
 
@@ -268,17 +268,17 @@ async def delete_post_metadata(file_name: str = Query(...)):
 async def get_blog_posts():
     """블로그 포스트 목록 (메타데이터 결합)"""
     metadata = await get_metadata()
-    
+
     posts = []
     for file_name, meta in metadata.items():
         posts.append({
             "file_name": file_name,
             **meta,
         })
-    
+
     # 최신순 정렬
     posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-    
+
     return {"posts": posts}
 
 
@@ -301,15 +301,15 @@ async def create_new_blog_post(data: BlogNewPostRequest):
     today = datetime.now().strftime("%Y%m%d")
     unique_id = uuid.uuid4().hex[:4]
     file_name = f"blog_{today}_{unique_id}.md"
-    
+
     # 마크다운 파일 생성
     BLOG_POST_PATH.mkdir(parents=True, exist_ok=True)
     file_path = BLOG_POST_PATH / file_name
-    
+
     content = data.content or f"# {data.title}\n\n내용을 입력하세요."
     async with aiofiles.open(file_path, "w", encoding="utf-8") as f:
         await f.write(content)
-    
+
     # 메타데이터 추가
     metadata = await get_metadata()
     now = datetime.now().isoformat()
@@ -324,7 +324,7 @@ async def create_new_blog_post(data: BlogNewPostRequest):
         "updated_at": now,
     }
     await save_metadata(metadata)
-    
+
     return {
         "message": "Blog post created successfully",
         "file_name": file_name,
@@ -337,17 +337,17 @@ async def create_new_blog_post(data: BlogNewPostRequest):
 async def get_post_detail(file_name: str = Query(...)):
     """파일명으로 마크다운 파일 내용 조회"""
     file_path = BLOG_POST_PATH / file_name
-    
+
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     async with aiofiles.open(file_path, "r", encoding="utf-8") as f:
         content = await f.read()
-    
+
     # 메타데이터도 함께 반환
     metadata = await get_metadata()
     meta = metadata.get(file_name, {})
-    
+
     return {
         "file_name": file_name,
         "content": content,
@@ -366,7 +366,7 @@ async def ai_content_generator(
     """AI 콘텐츠 생성 제너레이터"""
     try:
         from ..core.nlp_model.services import generate_blog_content_stream
-        
+
         async for chunk in generate_blog_content_stream(
             subject=subject,
             reference_urls=reference_urls,
@@ -380,7 +380,7 @@ async def ai_content_generator(
         yield f"data: {json.dumps({'content': '\\n\\nAI 콘텐츠 생성 모듈이 로드되지 않았습니다.'}, ensure_ascii=False)}\n\n"
     except Exception as e:
         yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
-    
+
     yield "data: [DONE]\n\n"
 
 
@@ -396,7 +396,7 @@ async def ai_generate_stream(
         urls = json.loads(reference_urls)
     except json.JSONDecodeError:
         urls = []
-    
+
     return StreamingResponse(
         ai_content_generator(subject, urls, additional_prompt, model),
         media_type="text/event-stream",

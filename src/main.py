@@ -19,14 +19,14 @@ async def lifespan(app: FastAPI):
     """애플리케이션 수명주기 관리"""
     # Startup
     print(f"🚀 Starting {settings.app_name}...")
-    
+
     # 미디어/정적 파일 디렉토리 생성
     os.makedirs(settings.media_root, exist_ok=True)
     os.makedirs(settings.static_root, exist_ok=True)
     os.makedirs(settings.blog_post_path, exist_ok=True)
-    
+
     yield
-    
+
     # Shutdown
     print(f"👋 Shutting down {settings.app_name}...")
 

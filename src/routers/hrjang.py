@@ -36,7 +36,7 @@ async def create_comment(
     )
     db.add(comment)
     await db.commit()
-    
+
     return {"message": "Success"}
 
 
@@ -47,7 +47,7 @@ async def get_comments(db: AsyncSession = Depends(get_async_db)):
         select(HrComment).order_by(HrComment.time.desc())
     )
     comments = result.scalars().all()
-    
+
     return HrCommentListResponse(comments=comments, total=len(comments))
 
 
@@ -61,10 +61,10 @@ async def get_comment(
         select(HrComment).where(HrComment.id == comment_id)
     )
     comment = result.scalar_one_or_none()
-    
+
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    
+
     return comment
 
 
@@ -79,22 +79,22 @@ async def update_comment(
         select(HrComment).where(HrComment.id == comment_id)
     )
     comment = result.scalar_one_or_none()
-    
+
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    
+
     # 비밀번호 확인
     if comment.password != data.password:
         raise HTTPException(status_code=400, detail="비밀번호가 일치하지 않습니다.")
-    
+
     # 업데이트
     comment.userid = data.userid
     comment.title = data.title
     comment.comment = data.comment
-    
+
     await db.commit()
     await db.refresh(comment)
-    
+
     return comment
 
 
@@ -109,17 +109,17 @@ async def delete_comment(
         select(HrComment).where(HrComment.id == comment_id)
     )
     comment = result.scalar_one_or_none()
-    
+
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    
+
     # 비밀번호 확인
     if comment.password != data.password:
         raise HTTPException(status_code=400, detail="비밀번호가 일치하지 않습니다.")
-    
+
     await db.delete(comment)
     await db.commit()
-    
+
     return {"message": "삭제되었습니다."}
 
 
@@ -134,15 +134,15 @@ async def delete_comment_legacy(
         select(HrComment).where(HrComment.id == data.id)
     )
     comment = result.scalar_one_or_none()
-    
+
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    
+
     # 비밀번호 확인
     if comment.password != data.password:
         raise HTTPException(status_code=400, detail="비밀번호가 일치하지 않습니다.")
-    
+
     await db.delete(comment)
     await db.commit()
-    
+
     return {"message": "삭제되었습니다."}

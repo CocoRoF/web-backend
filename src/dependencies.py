@@ -44,8 +44,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         )
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
-        to_encode, 
-        settings.jwt_secret_key, 
+        to_encode,
+        settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm
     )
     return encoded_jwt
@@ -59,8 +59,8 @@ def create_refresh_token(data: dict) -> str:
     )
     to_encode.update({"exp": expire, "type": "refresh"})
     encoded_jwt = jwt.encode(
-        to_encode, 
-        settings.jwt_secret_key, 
+        to_encode,
+        settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm
     )
     return encoded_jwt
@@ -73,11 +73,11 @@ async def get_current_user_optional(
     """현재 사용자 (선택적) - 인증 없어도 통과"""
     if not token:
         return None
-    
+
     try:
         payload = jwt.decode(
-            token, 
-            settings.jwt_secret_key, 
+            token,
+            settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm]
         )
         user_id: str = payload.get("sub")
@@ -85,7 +85,7 @@ async def get_current_user_optional(
             return None
     except JWTError:
         return None
-    
+
     # 여기서 실제 사용자 조회 로직 추가 가능
     return {"user_id": user_id}
 
@@ -100,14 +100,14 @@ async def get_current_user(
         detail="인증 정보를 확인할 수 없습니다.",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     if not token:
         raise credentials_exception
-    
+
     try:
         payload = jwt.decode(
-            token, 
-            settings.jwt_secret_key, 
+            token,
+            settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm]
         )
         user_id: str = payload.get("sub")
@@ -115,6 +115,6 @@ async def get_current_user(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     # 여기서 실제 사용자 조회 로직 추가 가능
     return {"user_id": user_id}

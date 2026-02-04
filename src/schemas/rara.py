@@ -74,7 +74,7 @@ class RaraModelResponse(BaseModel):
     response: Optional[str]
     user_rating: Optional[int]
     time: datetime
-    
+
     model_config = {"from_attributes": True}
 
 

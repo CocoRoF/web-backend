@@ -30,10 +30,10 @@ _article_cache: dict = {}
 def load_article_data():
     """기사 데이터 로드"""
     global _article_cache
-    
+
     # CSV 파일 경로 (환경에 맞게 조정)
     csv_path = Path(__file__).parent.parent / "data" / "article_gpt.csv"
-    
+
     if csv_path.exists():
         try:
             import pandas as pd
@@ -58,7 +58,7 @@ async def get_law_list(
         .where(LawListCrawledData.ls_id == request.lsId)
     )
     laws = result.scalars().all()
-    
+
     return laws
 
 
@@ -77,7 +77,7 @@ async def get_law_oldnew(
         .order_by(LawOldNewCrawledData.oldnew_sequence)
     )
     laws = result.scalars().all()
-    
+
     return laws
 
 
@@ -85,11 +85,11 @@ async def get_law_oldnew(
 async def get_article(request: ArticleCherserRequest):
     """기사 조회"""
     global _article_cache
-    
+
     if not _article_cache:
         load_article_data()
-    
+
     if request.input_date not in _article_cache:
         return {"Response": "No_Data_Exist"}
-    
+
     return _article_cache[request.input_date]

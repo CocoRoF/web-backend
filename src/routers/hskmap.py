@@ -24,13 +24,13 @@ async def hskmap_basic(
     try:
         # HSK 모델 임포트
         from ..core.hskmodel.model import hscode_matching_model
-        
+
         # 모델 실행
         result_isic, result, final_result = hscode_matching_model(
             request.isic_code or "",
             request.desc,
         )
-        
+
         # DB 저장 (선택적)
         hsk_record = HSKModel(
             desc=request.desc,
@@ -39,13 +39,13 @@ async def hskmap_basic(
         )
         db.add(hsk_record)
         await db.commit()
-        
+
         return HSKResponse(
             isic_map=result_isic,
             response=result,
             final_code=final_result,
         )
-        
+
     except ImportError:
         # 모델이 없는 경우 기본 응답
         return HSKResponse(

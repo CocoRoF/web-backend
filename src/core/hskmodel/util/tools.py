@@ -27,10 +27,10 @@ embedding_cache: Dict[str, List[float]] = {}
 def get_embedding(text: str) -> List[float]:
     """
     OpenAI 임베딩 생성
-    
+
     Args:
         text: 임베딩할 텍스트
-        
+
     Returns:
         임베딩 벡터
     """
@@ -46,23 +46,23 @@ def get_embedding(text: str) -> List[float]:
 def MapHS(data: Union[pd.DataFrame, List[Dict]]) -> Union[pd.DataFrame, List[Dict]]:
     """
     HS 코드 매핑
-    
+
     Args:
         data: DataFrame 또는 딕셔너리 리스트
-        
+
     Returns:
         HS 코드가 매핑된 데이터
     """
     from pathlib import Path
-    
+
     map_dict_path = Path(__file__).parent.parent / "data" / "map_dict.json"
-    
+
     if not map_dict_path.exists():
         return data
-        
+
     with open(map_dict_path, 'r', encoding='utf-8') as f:
         loaded_dict = json.load(f)
-    
+
     if isinstance(data, pd.DataFrame):
         print("Received a DataFrame")
         a = 0
@@ -78,10 +78,10 @@ def MapHS(data: Union[pd.DataFrame, List[Dict]]) -> Union[pd.DataFrame, List[Dic
                 data.at[idx, "HS_Map_02"] = np.nan
                 data.at[idx, "HS_Map_04"] = np.nan
                 print(f"No Data {idx}, error: {e}")
-                
+
         print(f"Done. Success = {a}, Fail = {len(data)-a}")
         return data
-        
+
     elif isinstance(data, list):
         print("Received a JSON-like dictionary")
         a = 0
@@ -97,16 +97,16 @@ def MapHS(data: Union[pd.DataFrame, List[Dict]]) -> Union[pd.DataFrame, List[Dic
                 data[n]["HS_Map_02"] = []
                 data[n]["HS_Map_04"] = []
                 print(f"No Data {n}, error: {e}")
-                
+
         return data
     else:
         raise ValueError("Unsupported type")
 
 
 def get_similarities(
-    text: str, 
-    text_list: Optional[List[str]] = None, 
-    example: Optional[str] = None, 
+    text: str,
+    text_list: Optional[List[str]] = None,
+    example: Optional[str] = None,
     top_n: int = 1
 ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
@@ -130,14 +130,14 @@ def get_similarities(
             "Optical, photographic instruments and apparatus, watches, musical instruments",
             "Arms and ammunition, miscellaneous manufactured articles, works of art"
         ]
-        
+
     if text_list is None and example is None:
         print("No Text_List and Example. Need at least one arguments")
         return None
-        
+
     reference_embedding = get_embedding(text)
     similarities = []
-    
+
     for category in text_list:
         category_embedding = get_embedding(category)
         similarity = cosine_similarity([reference_embedding], [category_embedding])[0][0]
@@ -145,45 +145,45 @@ def get_similarities(
 
     similarities.sort(key=lambda x: x[1], reverse=True)
     top_n_list = similarities[:top_n]
-    
+
     if top_n == 1:
         return {"category": top_n_list[0][0], "relevance": round(top_n_list[0][1], 3)}
-    else:    
+    else:
         return [{"category": cat, "relevance": round(sim, 3)} for cat, sim in top_n_list]
 
 
 def get_similarities_cache(
-    text: str, 
-    text_list: Optional[List[str]] = None, 
-    example: Optional[str] = None, 
-    top_n: int = 1, 
-    result_key: str = "category", 
+    text: str,
+    text_list: Optional[List[str]] = None,
+    example: Optional[str] = None,
+    top_n: int = 1,
+    result_key: str = "category",
     result_value: str = "relevance"
 ) -> Dict[str, Any]:
     """
     캐싱된 유사도 계산
     """
     global embedding_cache
-    
+
     if example == "chapter":
         text_list = [
-            "Live animals, animal products", 
-            "Vegetable products", 
-            "Animals or vegetable fats and oils, prepared foodstuffs", 
-            "Mineral products", 
-            "Products of the chemical or allied industries", 
-            "Plastics and articles thereof, and rubber and articles thereof", 
-            "Raw hides and skins, leather, furskins and articles thereof", 
-            "Wood and articles of wood, pulp of wood", 
-            "Textile and textile articles", 
-            "Footwear, hats, wigs, articles made of stone, ceramics", 
-            "Base metals and articles thereof", 
-            "Machineries, electrical machinery and equipment and parts thereof, sound recorders and reproducers, television and parts thereof", 
-            "Vehicles, aircraft, vessels and associated transport equipment", 
-            "Optical, photographic instruments and apparatus, watches, musical instruments", 
+            "Live animals, animal products",
+            "Vegetable products",
+            "Animals or vegetable fats and oils, prepared foodstuffs",
+            "Mineral products",
+            "Products of the chemical or allied industries",
+            "Plastics and articles thereof, and rubber and articles thereof",
+            "Raw hides and skins, leather, furskins and articles thereof",
+            "Wood and articles of wood, pulp of wood",
+            "Textile and textile articles",
+            "Footwear, hats, wigs, articles made of stone, ceramics",
+            "Base metals and articles thereof",
+            "Machineries, electrical machinery and equipment and parts thereof, sound recorders and reproducers, television and parts thereof",
+            "Vehicles, aircraft, vessels and associated transport equipment",
+            "Optical, photographic instruments and apparatus, watches, musical instruments",
             "Arms and ammunition, miscellaneous manufactured articles, works of art"
         ]
-        
+
     if text_list is None and example is None:
         print("No Text_List and Example. Need at least one arguments")
         return {}
@@ -213,7 +213,7 @@ def get_similarities_cache(
 
     if top_n == 1:
         return {result_key: top_n_list[0][0], result_value: round(top_n_list[0][1], 3)}
-    else:    
+    else:
         return [{result_key: cat, result_value: round(sim, 3)} for cat, sim in top_n_list]
 
 
@@ -222,23 +222,23 @@ def Chapter_selector(category_name: str) -> List[str]:
     카테고리별 챕터 목록 반환
     """
     section_list = [
-        "Live animals, animal products", 
-        "Vegetable products", 
-        "Animals or vegetable fats and oils, prepared foodstuffs", 
-        "Mineral products", 
-        "Products of the chemical or allied industries", 
-        "Plastics and articles thereof, and rubber and articles thereof", 
-        "Raw hides and skins, leather, furskins and articles thereof", 
-        "Wood and articles of wood, pulp of wood", 
-        "Textile and textile articles", 
-        "Footwear, hats, wigs, articles made of stone, ceramics", 
-        "Base metals and articles thereof", 
-        "Machineries, electrical machinery and equipment and parts thereof, sound recorders and reproducers, television and parts thereof", 
-        "Vehicles, aircraft, vessels and associated transport equipment", 
-        "Optical, photographic instruments and apparatus, watches, musical instruments", 
+        "Live animals, animal products",
+        "Vegetable products",
+        "Animals or vegetable fats and oils, prepared foodstuffs",
+        "Mineral products",
+        "Products of the chemical or allied industries",
+        "Plastics and articles thereof, and rubber and articles thereof",
+        "Raw hides and skins, leather, furskins and articles thereof",
+        "Wood and articles of wood, pulp of wood",
+        "Textile and textile articles",
+        "Footwear, hats, wigs, articles made of stone, ceramics",
+        "Base metals and articles thereof",
+        "Machineries, electrical machinery and equipment and parts thereof, sound recorders and reproducers, television and parts thereof",
+        "Vehicles, aircraft, vessels and associated transport equipment",
+        "Optical, photographic instruments and apparatus, watches, musical instruments",
         "Arms and ammunition, miscellaneous manufactured articles, works of art"
     ]
-    
+
     chapter_mapping = {
         section_list[0]: [
             "Live Animals",
@@ -367,7 +367,7 @@ def Chapter_selector(category_name: str) -> List[str]:
             "Works of art, collectors' pieces and antiques"
         ],
     }
-    
+
     return chapter_mapping.get(category_name, [])
 
 
@@ -377,29 +377,29 @@ def code_ten_extracter(code_four: str) -> List[Dict[str, Any]]:
     """
     if not code_four:
         return []
-        
+
     data = []
-    
+
     for idx in range(1, 10):
         previous_length = len(data)
         url = f"https://fta.kita.net/hsCode?pageIndex={idx}&mnSn=207&scGbn=hskCd&scKwrd={code_four}"
-        
+
         try:
             result = requests.get(url, timeout=10)
             result.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f"Error fetching URL: {e}")
             return data
-        
+
         soup = BeautifulSoup(result.text, 'html.parser')
         tbody = soup.find('tbody', id="hskCodeTbody")
-        
+
         if tbody is None:
             print("Error: Could not find tbody element.")
             return data
-            
+
         rows = tbody.find_all('tr')
-        
+
         for row in rows:
             cells = row.find_all('td')
             if len(cells) >= 4:
@@ -409,7 +409,7 @@ def code_ten_extracter(code_four: str) -> List[Dict[str, Any]]:
                 value1 = re.sub(r'제\d+류\s*', '', value1)
                 value2 = cells[2].text.strip()
                 value3 = cells[3].text.strip()
-                
+
                 if key_four == code_four:
                     data.append({
                         key: {
@@ -418,29 +418,29 @@ def code_ten_extracter(code_four: str) -> List[Dict[str, Any]]:
                             'HS_10_kor': value3
                         }
                     })
-                
+
         if previous_length == len(data):
             break
-        
+
     return data
 
 
 def final_hsten_extractor(
-    isic_data: Dict[str, Any], 
+    isic_data: Dict[str, Any],
     data_list: List[Dict[str, Any]]
 ) -> List[str]:
     """
     최종 HS10 코드 추출 (ISIC 포함)
     """
     final_hs10_code_list = []
-    
+
     try:
         isic_02 = isic_data.get("HS02", [])
         isic_04 = isic_data.get("HS04", [])
     except (KeyError, TypeError):
         isic_02 = []
         isic_04 = []
-    
+
     # 여러 조건으로 반복 시도
     conditions = [
         lambda c, e4, e10: c[:4] in isic_04 and c in e10,
@@ -449,27 +449,27 @@ def final_hsten_extractor(
         lambda c, e4, e10: c[:4] == e4,
         lambda c, e4, e10: True,
     ]
-    
+
     for condition in conditions:
         for data in data_list:
             contents = data.get("Contents", {})
-            
+
             try:
                 llm_10_list = contents.get("LLM_HS10_List", [])
             except:
                 continue
-                
+
             emb_10_list = contents.get("Emb_HS10_List", [])
             emb_4 = contents.get("Emb_HS04")
-            
+
             for code_10 in llm_10_list:
                 if condition(code_10, emb_4, emb_10_list):
                     final_hs10_code_list.append(code_10)
-        
+
         final_hs10_code_list = list(set(final_hs10_code_list))
         if len(final_hs10_code_list) >= len(data_list):
             return final_hs10_code_list
-    
+
     return final_hs10_code_list
 
 
@@ -478,21 +478,21 @@ def final_hsten_extractor_noisic(data_list: List[Dict[str, Any]]) -> List[str]:
     최종 HS10 코드 추출 (ISIC 없음)
     """
     final_hs10_code_list = []
-    
+
     # 여러 조건으로 반복 시도
     for data in data_list:
         contents = data.get("Contents", {})
-        
+
         try:
             llm_10_list = contents.get("LLM_HS10_List", [])
             emb_10_list = contents.get("Emb_HS10_List", [])
         except:
             continue
-        
+
         for code_10 in llm_10_list:
             if code_10 in emb_10_list:
                 final_hs10_code_list.append(code_10)
-    
+
     final_hs10_code_list = list(set(final_hs10_code_list))
     if len(final_hs10_code_list) >= len(data_list):
         return final_hs10_code_list
@@ -500,49 +500,49 @@ def final_hsten_extractor_noisic(data_list: List[Dict[str, Any]]) -> List[str]:
     # 두 번째 조건
     for data in data_list:
         contents = data.get("Contents", {})
-        
+
         try:
             llm_10_list = contents.get("LLM_HS10_List", [])
             emb_4 = contents.get("Emb_HS04")
         except:
             continue
-        
+
         for code_10 in llm_10_list:
             if code_10[:4] == emb_4:
                 final_hs10_code_list.append(code_10)
-                    
-    final_hs10_code_list = list(set(final_hs10_code_list))                   
+
+    final_hs10_code_list = list(set(final_hs10_code_list))
     if len(final_hs10_code_list) >= len(data_list):
         return final_hs10_code_list
-            
+
     # 세 번째 조건
     for data in data_list:
         contents = data.get("Contents", {})
-        
+
         try:
             llm_10_list = contents.get("LLM_HS10_List", [])
             emb_2 = contents.get("Emb_HS02")
         except:
             continue
-        
+
         for code_10 in llm_10_list:
             if code_10[:2] == emb_2:
                 final_hs10_code_list.append(code_10)
-                
+
     final_hs10_code_list = list(set(final_hs10_code_list))
     if len(final_hs10_code_list) >= len(data_list):
         return final_hs10_code_list
-        
+
     # 모든 코드 추가
     for data in data_list:
         contents = data.get("Contents", {})
-        
+
         try:
             llm_10_list = contents.get("LLM_HS10_List", [])
         except:
             continue
-        
+
         for code_10 in llm_10_list:
             final_hs10_code_list.append(code_10)
-                
+
     return list(set(final_hs10_code_list))
