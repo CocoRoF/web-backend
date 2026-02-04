@@ -1,0 +1,109 @@
+[project]
+name = "fastapi-backend"
+version = "0.1.0"
+description = "FastAPI backend migrated from Django REST Framework"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Developer", email = "dev@example.com" }
+]
+keywords = ["fastapi", "backend", "api", "nlp", "ai"]
+
+dependencies = [
+    # FastAPI Core
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    
+    # Database
+    "sqlalchemy>=2.0.25",
+    "asyncpg>=0.30.0",
+    "psycopg2-binary>=2.9.9",
+    "alembic>=1.14.0",
+    
+    # Authentication
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    
+    # AI/ML - LangChain
+    "langchain>=0.3.0",
+    "langchain-openai>=0.2.8",
+    "langchain-community>=0.3.0",
+    "langchain-core>=0.3.27",
+    "langchain-text-splitters>=0.3.0",
+    
+    # AI/ML - OpenAI & Google
+    "openai>=1.55.0",
+    "google-generativeai>=0.4.1",
+    "tiktoken>=0.7.0",
+    
+    # AI/ML - Models & Vector Stores
+    "transformers>=4.37.0",
+    "sentence-transformers>=2.2.0",
+    "faiss-cpu>=1.7.4",
+    "huggingface-hub>=0.20.3",
+    
+    # Data Processing
+    "pandas>=2.2.0",
+    "numpy>=1.26.3",
+    "openpyxl>=3.1.2",
+    "scikit-learn>=1.5.0",
+    
+    # HTTP & Web Scraping
+    "httpx>=0.26.0",
+    "aiohttp>=3.9.1",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.3",
+    
+    # Utilities
+    "pyyaml>=6.0.1",
+    "pillow>=10.4.0",
+    "tqdm>=4.66.1",
+    "regex>=2023.12.25",
+    "python-dotenv>=1.0.0",
+    
+    # SSE Streaming
+    "sse-starlette>=2.1.0",
+    
+    # CORS
+    "starlette>=0.41.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.26.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]

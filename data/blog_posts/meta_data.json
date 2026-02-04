@@ -1,0 +1,116 @@
+{
+    "posts": {
+        "ai-machine-learning-future.md": {
+            "title": "AI와 머신러닝의 미래 전망",
+            "date": "2025-09-18",
+            "tags": [
+                "AI",
+                "Machine Learning",
+                "Future",
+                "Technology"
+            ],
+            "excerpt": "인공지능과 머신러닝 기술의 발전과 미래 전망에 대한 심층 분석입니다.",
+            "author": "CocoRoF",
+            "category": "AI/ML",
+            "published": true,
+            "lastModified": "2025-09-20T06:52:23.318Z"
+        },
+        "nextjs-14-react-18-features.md": {
+            "title": "Next.js 14와 React 18의 새로운 기능들",
+            "date": "2025-09-17",
+            "tags": [
+                "Next.js",
+                "React",
+                "Frontend",
+                "JavaScript"
+            ],
+            "excerpt": "Next.js 14와 React 18에서 도입된 혁신적인 기능들과 개발 경험의 변화를 살펴봅니다.",
+            "author": "CocoRoF",
+            "category": "Frontend",
+            "published": true,
+            "lastModified": "2025-09-20T08:32:52.577Z"
+        },
+        "test.md": {
+            "title": "테스트 포스트 1",
+            "date": "2025-09-20",
+            "tags": [
+                "test",
+                "sample"
+            ],
+            "excerpt": "첫 번째 테스트 포스트입니다.",
+            "author": "CocoRoF",
+            "category": "test",
+            "published": true,
+            "lastModified": "2025-09-20T12:00:00Z"
+        },
+        "test copy.md": {
+            "title": "테스트 포스트 2",
+            "date": "2025-09-20",
+            "tags": [
+                "test",
+                "sample",
+                "copy"
+            ],
+            "excerpt": "두 번째 테스트 포스트입니다.",
+            "author": "CocoRoF",
+            "category": "test",
+            "published": true,
+            "lastModified": "2025-09-20T12:05:00Z"
+        },
+        "test copy 2.md": {
+            "title": "테스트 포스트 3",
+            "date": "2025-09-20",
+            "tags": [
+                "test",
+                "sample",
+                "draft"
+            ],
+            "excerpt": "세 번째 테스트 포스트입니다.",
+            "author": "CocoRoF",
+            "category": "test",
+            "published": false,
+            "lastModified": "2025-09-20T12:10:00Z"
+        },
+        "test copy 3.md": {
+            "title": "포스트2",
+            "excerpt": "요약임",
+            "tags": [],
+            "author": "",
+            "category": "",
+            "published": true,
+            "date": "2025-09-20",
+            "lastModified": "2025-09-20T07:18:56.674Z"
+        },
+        "blog_20250920_dd6d.md": {
+            "title": "zz",
+            "excerpt": "",
+            "category": "",
+            "tags": [],
+            "author": "CocoRoF",
+            "date": "2025-09-20T10:04:17.803Z",
+            "published": true,
+            "lastModified": "2025-09-20T10:04:18.624Z"
+        },
+        "blog_20250920_545d.md": {
+            "title": "test",
+            "excerpt": "",
+            "category": "",
+            "tags": [],
+            "author": "CocoRoF",
+            "date": "2025-09-20T10:11:15.227Z",
+            "published": true,
+            "lastModified": "2025-09-20T10:11:15.345Z"
+        },
+        "blog_20250920_7f3d.md": {
+            "title": "",
+            "excerpt": "",
+            "category": "",
+            "tags": [],
+            "author": "CocoRoF",
+            "date": "2025-09-20T10:53:04.039Z",
+            "published": true,
+            "lastModified": "2025-09-20T10:53:04.226Z"
+        }
+    },
+    "lastUpdated": "2025-09-20T10:53:04.226Z"
+}

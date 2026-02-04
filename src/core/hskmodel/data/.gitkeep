@@ -1,0 +1,6 @@
+# Data files placeholder
+# Copy JSON data files from the Django project:
+# - chapter_dict.json
+# - header_dict.json  
+# - hs10_dict_5.json
+# - map_dict.json
