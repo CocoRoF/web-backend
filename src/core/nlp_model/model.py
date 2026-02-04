@@ -1,13 +1,14 @@
 """
 Review Responder Model
 
-리뷰 분석 및 응답 생성 핵심 클래스
+LangChain 1.0+ 호환 리뷰 분석 및 응답 생성 핵심 클래스
 """
 import os
 from typing import Optional, List, Dict, Any
 
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 
 from .utils.util_module import (
     review_analyzer,
@@ -17,7 +18,6 @@ from .utils.util_module import (
     responder_com_name,
     responder_cc,
     responder_cgc,
-    review_analyzer_zerocot,
 )
 from ...config import settings
 
@@ -26,7 +26,7 @@ class ReviewResponder:
     """
     리뷰 분석 및 응답 생성 클래스
 
-    Django에서 마이그레이션된 ReviewResponder 클래스
+    LangChain 1.0+ 호환 버전
     """
 
     def __init__(
@@ -42,9 +42,9 @@ class ReviewResponder:
         rag: bool = False,
         memory: bool = False,
         rag_list: Optional[List[str]] = None,
-        analysis_model_name: str = "gpt-4-0125-preview",
+        analysis_model_name: str = "gpt-4o",
         nocot: bool = False,
-        model_name: str = "gpt-4-0125-preview",
+        model_name: str = "gpt-4o",
     ):
         self.api_key = api_key or settings.openai_api_key
         self.analyzer_prompt_number = analyzer_prompt_number
@@ -61,25 +61,41 @@ class ReviewResponder:
         self.analysis_model_name = analysis_model_name
         self.nocot = nocot
         self.model_name = model_name
+        self.vectorstore = None
 
         # API 키 설정
         os.environ["OPENAI_API_KEY"] = self.api_key
 
         # RAG 설정
         if self.rag and self.rag_list:
-            self.vectorstore = FAISS.from_texts(
-                self.rag_list,
-                embedding=OpenAIEmbeddings()
-            )
-            self.retriever = self.vectorstore.as_retriever(
-                search_type="similarity_score_threshold",
-                search_kwargs={"k": 5, "score_threshold": 0.4},
-            )
+            self._setup_rag(self.rag_list)
 
         # 분석 결과 저장
         self.review_sentiment: Optional[str] = None
         self.review_emotion: Optional[str] = None
         self.review_intention: Optional[str] = None
+
+    def _setup_rag(self, texts: List[str]) -> None:
+        """
+        RAG 벡터스토어 설정 (LangChain 1.0+ 방식)
+
+        Args:
+            texts: 벡터스토어에 추가할 텍스트 리스트
+        """
+        # Document 객체 생성
+        documents = [Document(page_content=text) for text in texts]
+
+        # 임베딩 모델 초기화
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+        # FAISS 벡터스토어 생성
+        self.vectorstore = FAISS.from_documents(documents, embeddings)
+
+        # Retriever 설정
+        self.retriever = self.vectorstore.as_retriever(
+            search_type="similarity_score_threshold",
+            search_kwargs={"k": 5, "score_threshold": 0.4},
+        )
 
     def Analysis(self, review_text: str, value_return: bool = False) -> Optional[Dict[str, Any]]:
         """
@@ -260,13 +276,6 @@ class ReviewResponder:
         if retrieval:
             self.rag = True
             self.rag_list = [retrieval]
-            self.vectorstore = FAISS.from_texts(
-                self.rag_list,
-                embedding=OpenAIEmbeddings()
-            )
-            self.retriever = self.vectorstore.as_retriever(
-                search_type="similarity_score_threshold",
-                search_kwargs={"k": 5, "score_threshold": 0.4},
-            )
+            self._setup_rag(self.rag_list)
 
         return self.Response(review_text, method=method)

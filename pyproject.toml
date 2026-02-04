@@ -28,29 +28,25 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
 
-    # AI/ML - LangChain
-    "langchain>=0.3.0",
-    "langchain-openai>=0.2.8",
-    "langchain-community>=0.3.0",
-    "langchain-core>=0.3.27",
-    "langchain-text-splitters>=0.3.0",
+    # AI/ML - LangChain 1.0+
+    "langchain>=1.2.8",
+    "langchain-openai>=1.1.7",
+    "langchain-community>=0.4.1",
+    "langchain-core>=1.2.8",
+    "langchain-text-splitters>=0.3.4",
 
     # AI/ML - OpenAI & Google
-    "openai>=1.55.0",
-    "google-generativeai>=0.4.1",
-    "tiktoken>=0.7.0",
+    "openai>=1.60.0",
+    "google-generativeai>=0.8.0",
+    "tiktoken>=0.8.0",
 
-    # AI/ML - Models & Vector Stores
-    "transformers>=4.37.0",
-    "sentence-transformers>=2.2.0",
-    "faiss-cpu>=1.7.4",
-    "huggingface-hub>=0.20.3",
+    # Vector Stores
+    "faiss-cpu>=1.9.0",
 
     # Data Processing
     "pandas>=2.2.0",
     "numpy>=1.26.3",
     "openpyxl>=3.1.2",
-    "scikit-learn>=1.5.0",
 
     # HTTP & Web Scraping
     "httpx>=0.26.0",
@@ -70,6 +66,9 @@ dependencies = [
 
     # CORS
     "starlette>=0.41.0",
+
+    # File handling
+    "aiofiles>=24.1.0",
 ]
 
 [project.optional-dependencies]

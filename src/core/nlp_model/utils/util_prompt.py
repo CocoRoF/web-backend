@@ -1,11 +1,177 @@
 """
 NLP Model Prompt Utilities
 
-프롬프트 및 출력 함수 정의
+LangChain 1.0+ 호환 프롬프트 및 Pydantic 스키마 정의
 """
-from typing import List, Dict, Any
+from typing import Literal, Optional
+from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate
 
-from langchain.prompts import ChatPromptTemplate
+
+# ============================================================================
+# Pydantic Schemas for Structured Output (LangChain 1.0+ with_structured_output)
+# ============================================================================
+
+class ReviewAnalysis(BaseModel):
+    """리뷰 분석 결과 스키마"""
+    User_Sentiment: Literal["Positive", "Neutral", "Negative"] = Field(
+        description="Sentiment Analysis of the 'Review'"
+    )
+    User_Emotion: Literal[
+        "Anger", "Disgust", "Fear", "Happiness", "Contempt", "Sadness", "Surprise", "Neutral"
+    ] = Field(
+        description="Emotion Analysis of the 'Review'"
+    )
+    User_Intention: Literal[
+        "Complaint", "Expressing Dissatisfaction", "Warning Others", "Feedback",
+        "Sharing Experience", "Expressing Satisfaction", "Praise", "Recommendation"
+    ] = Field(
+        description="Intention Analysis of the 'Review'"
+    )
+
+
+class UrgencyAnalysis(BaseModel):
+    """긴급도 분석 스키마"""
+    Urgency_Level: Literal["Urgent", "Medium", "Not Urgent"] = Field(
+        description="The urgency level of responding to this review"
+    )
+
+
+class SimpleResponse(BaseModel):
+    """간단한 응답 스키마"""
+    Response: str = Field(description="Response to Customer Review")
+
+
+class DetailedResponse(BaseModel):
+    """상세 응답 스키마 (Chain of Thought 포함)"""
+    Responding_to_Customer_Sentiment: str = Field(
+        description="Responding to Customer Sentiment"
+    )
+    Sentiment_Reason: str = Field(
+        description="The reason for the sentiment response"
+    )
+    Responding_to_Customer_Emotion: str = Field(
+        description="Responding to Customer Emotion"
+    )
+    Emotion_Reason: str = Field(
+        description="The reason for the emotion response"
+    )
+    Responding_to_Customer_Intention: str = Field(
+        description="Responding to Customer Intention"
+    )
+    Intention_Reason: str = Field(
+        description="The reason for the intention response"
+    )
+    Final_Response: str = Field(
+        description="The Final Generated Response"
+    )
+
+
+class DetailedResponseWithGreeting(BaseModel):
+    """인사말 포함 상세 응답 스키마"""
+    Greeting: str = Field(description="Greeting Message")
+    Responding_to_Customer_Sentiment: str = Field(
+        description="Responding to Customer Sentiment"
+    )
+    Sentiment_Reason: str = Field(
+        description="The reason for the sentiment response"
+    )
+    Responding_to_Customer_Emotion: str = Field(
+        description="Responding to Customer Emotion"
+    )
+    Emotion_Reason: str = Field(
+        description="The reason for the emotion response"
+    )
+    Responding_to_Customer_Intention: str = Field(
+        description="Responding to Customer Intention"
+    )
+    Intention_Reason: str = Field(
+        description="The reason for the intention response"
+    )
+    Final_Response: str = Field(
+        description="The Final Generated Response"
+    )
+
+
+class DetailedResponseWithContact(BaseModel):
+    """인사말 및 연락처 포함 상세 응답 스키마"""
+    Greeting: str = Field(description="Greeting Message")
+    Contact_Information: str = Field(description="Contact Information")
+    Responding_to_Customer_Sentiment: str = Field(
+        description="Responding to Customer Sentiment"
+    )
+    Sentiment_Reason: str = Field(
+        description="The reason for the sentiment response"
+    )
+    Responding_to_Customer_Emotion: str = Field(
+        description="Responding to Customer Emotion"
+    )
+    Emotion_Reason: str = Field(
+        description="The reason for the emotion response"
+    )
+    Responding_to_Customer_Intention: str = Field(
+        description="Responding to Customer Intention"
+    )
+    Intention_Reason: str = Field(
+        description="The reason for the intention response"
+    )
+    Final_Response: str = Field(
+        description="The Final Generated Response"
+    )
+
+
+# ============================================================================
+# Schema Selectors
+# ============================================================================
+
+def get_analysis_schema() -> type[ReviewAnalysis]:
+    """리뷰 분석 스키마 반환"""
+    return ReviewAnalysis
+
+
+def get_urgency_schema() -> type[UrgencyAnalysis]:
+    """긴급도 분석 스키마 반환"""
+    return UrgencyAnalysis
+
+
+def get_response_schema(prompt_num: int) -> type[BaseModel]:
+    """
+    응답 스키마 선택
+
+    Args:
+        prompt_num: 프롬프트 번호 (0-4)
+
+    Returns:
+        해당하는 Pydantic 스키마 클래스
+    """
+    schema_map = {
+        0: DetailedResponse,
+        1: DetailedResponseWithGreeting,
+        2: DetailedResponseWithContact,
+        3: DetailedResponseWithGreeting,
+        4: SimpleResponse,
+    }
+    return schema_map.get(prompt_num, DetailedResponse)
+
+
+# ============================================================================
+# Prompt Templates
+# ============================================================================
+
+def get_analysis_prompt() -> ChatPromptTemplate:
+    """리뷰 분석용 프롬프트 반환"""
+    return ChatPromptTemplate.from_messages([
+        ("system", "As an online hotel manager, analyze customer reviews."),
+        ("human", "{review}"),
+    ])
+
+
+def get_urgency_prompt() -> ChatPromptTemplate:
+    """긴급도 분석용 프롬프트 반환"""
+    return ChatPromptTemplate.from_messages([
+        ("system", "As a review manager, assess how urgent it is to respond to a given customer's review."),
+        ("human", "{review}"),
+    ])
 
 
 def response_prompt_selector(prompt_num: int, rag: bool = False) -> ChatPromptTemplate:
@@ -121,173 +287,91 @@ def response_prompt_selector(prompt_num: int, rag: bool = False) -> ChatPromptTe
     return prompts.get((prompt_num, rag), prompts[(0, False)])
 
 
-def analysis_prompt_selector(prompt_num: int) -> List[Dict[str, Any]]:
-    """
-    분석 함수 정의 선택
-    """
-    function_list = [
-        [{
-            "name": "Describer",
-            "description": "Analyze the following Review",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "User_Sentiment": {
-                        "type": "string",
-                        "enum": ["Positive", "Neutral", "Negative"],
-                        "description": "Sentiment Analysis of the 'Review'",
-                    },
-                    "User_Emotion": {
-                        "type": "string",
-                        "enum": ["Anger", "Disgust", "Fear", "Happiness", "Contempt", "Sadness", "Surprise"],
-                        "description": "Emotion Analysis of the 'Review'",
-                    },
-                    "User_Intention": {
-                        "type": "string",
-                        "enum": ["Complaint", "Expressing Dissatisfaction", "Warning Others", "Feedback",
-                                "Sharing Experience", "Expressing Satisfaction", "Praise", "Recommendation"],
-                        "description": "Intention Analysis of the 'Review'",
-                    },
-                },
-                "required": ["User_Sentiment", "User_Emotion", "User_Intention"],
-            },
-        }],
-    ]
-
-    return function_list[prompt_num] if prompt_num < len(function_list) else function_list[0]
+def get_rag_response_prompt() -> ChatPromptTemplate:
+    """RAG 응답용 프롬프트 반환"""
+    return ChatPromptTemplate.from_messages([
+        ("system",
+         "As a marketing manager managing online customer reviews, write a response to the following 'Review'.\n\n"
+         "When composing your reply, consider 'Customer Sentiment', 'Customer Emotion' and 'Customer Intention'. "
+         "The given 'Responder Name' and 'Contact Information' must be included. "
+         "Additionally, use the following pieces of retrieved context to answer the question.\n"
+         "Context: {context}"),
+        ("human",
+         "Responder Name:\n{company_name}\n\nContact:\n{contact}\n\n"
+         "Customer Sentiment:\n{sentiment}\n\nCustomer Emotion:\n{emotion}\n\n"
+         "Customer Intention:\n{intention}\n\nReview:\n{review}")
+    ])
 
 
-def Response_output_selector(prompt_num: int) -> List[Dict[str, Any]]:
+def get_simple_response_prompt() -> ChatPromptTemplate:
+    """간단 응답용 프롬프트 반환"""
+    return ChatPromptTemplate.from_messages([
+        ("system",
+         "As a marketing manager managing online customer reviews, write a response to the following 'Review'.\n\n"
+         "When composing your reply, consider 'Customer Sentiment', 'Customer Emotion' and 'Customer Intention'."),
+        ("human",
+         "Customer Sentiment:\n{sentiment}\n\nCustomer Emotion:\n{emotion}\n\n"
+         "Customer Intention:\n{intention}\n\nReview:\n{review}")
+    ])
+
+
+# ============================================================================
+# Result Mappings (Korean translations)
+# ============================================================================
+
+SENTIMENT_MAPPING = {
+    "Positive": "긍정",
+    "Neutral": "중립",
+    "Negative": "부정",
+}
+
+EMOTION_MAPPING = {
+    "Anger": "화남",
+    "Disgust": "역겨움",
+    "Fear": "공포",
+    "Happiness": "행복",
+    "Contempt": "조소",
+    "Sadness": "슬픔",
+    "Surprise": "놀람",
+    "Neutral": "중립"
+}
+
+INTENTION_MAPPING = {
+    "Complaint": "항의",
+    "Expressing Dissatisfaction": "불만족 표출",
+    "Warning Others": "타인에게 경고",
+    "Feedback": "피드백",
+    "Sharing Experience": "경험 공유",
+    "Expressing Satisfaction": "만족감 표출",
+    "Praise": "칭찬",
+    "Recommendation": "추천"
+}
+
+URGENCY_MAPPING = {
+    "Urgent": "긴급함",
+    "Medium": "중간",
+    "Not Urgent": "긴급하지않음",
+}
+
+
+def translate_analysis_result(analysis: ReviewAnalysis, urgency: Optional[UrgencyAnalysis] = None) -> dict:
     """
-    응답 출력 함수 선택
+    분석 결과를 한국어로 변환
+
+    Args:
+        analysis: 리뷰 분석 결과
+        urgency: 긴급도 분석 결과 (선택)
+
+    Returns:
+        한국어로 번역된 분석 결과 딕셔너리
     """
-    base_response = {
-        "name": "Responder",
-        "description": "Respond appropriately to the following customer 'Reviews'",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "Responding_to_Customer_Sentiment": {"type": "string", "description": "Responding to Customer Sentiment"},
-                "Sentiment_Reason": {"type": "string", "description": "The reason for the sentiment response"},
-                "Responding_to_Customer_Emotion": {"type": "string", "description": "Responding to Customer Emotion"},
-                "Emotion_Reason": {"type": "string", "description": "The reason for the emotion response"},
-                "Responding_to_Customer_Intention": {"type": "string", "description": "Responding to Customer Intention"},
-                "Intention_Reason": {"type": "string", "description": "The reason for the intention response"},
-                "Final_Response": {"type": "string", "description": "The Final Generated Response"},
-            },
-            "required": ["Responding_to_Customer_Sentiment", "Sentiment_Reason",
-                        "Responding_to_Customer_Emotion", "Emotion_Reason",
-                        "Responding_to_Customer_Intention", "Intention_Reason", "Final_Response"],
-        },
+    result = {
+        'User_Sentiment': SENTIMENT_MAPPING.get(analysis.User_Sentiment, analysis.User_Sentiment),
+        'User_Emotion': EMOTION_MAPPING.get(analysis.User_Emotion, analysis.User_Emotion),
+        'User_Intention': INTENTION_MAPPING.get(analysis.User_Intention, analysis.User_Intention),
     }
 
-    if prompt_num == 4:
-        return [{
-            "name": "Responder",
-            "description": "Respond appropriately to the following customer 'Reviews'",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "Response": {"type": "string", "description": "Response to Customer Review"},
-                },
-                "required": ["Response"],
-            },
-        }]
+    if urgency:
+        result['Review_Urgency'] = URGENCY_MAPPING.get(urgency.Urgency_Level, urgency.Urgency_Level)
 
-    if prompt_num in [1, 2, 3]:
-        base_response["parameters"]["properties"]["Greeting"] = {"type": "string", "description": "Greeting Message"}
-        base_response["parameters"]["required"].insert(0, "Greeting")
-
-    if prompt_num == 2:
-        base_response["parameters"]["properties"]["Contact_Information"] = {"type": "string", "description": "Contact Information"}
-        base_response["parameters"]["required"].append("Contact_Information")
-
-    return [base_response]
-
-
-def output_function(prompt_name: str = None) -> Dict[str, Any]:
-    """
-    OpenAI Function 정의 반환
-    """
-    functions = {
-        "sentiment": {
-            "name": "Describer",
-            "description": "Analyze the following Review",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "User_Sentiment": {"type": "string", "enum": ["Positive", "Neutral", "Negative"]},
-                },
-                "required": ["User_Sentiment"],
-            },
-        },
-        "emotion": {
-            "name": "Describer",
-            "description": "Analyze the following Review",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "User_Emotion": {"type": "string", "enum": ["Anger", "Disgust", "Fear", "Happiness", "Contempt", "Sadness", "Surprise"]},
-                },
-                "required": ["User_Emotion"],
-            },
-        },
-        "intention": {
-            "name": "Describer",
-            "description": "Analyze the following Review",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "User_Intention": {"type": "string", "enum": ["Complaint", "Expressing Dissatisfaction", "Warning Others", "Feedback", "Sharing Experience", "Expressing Satisfaction", "Praise", "Recommendation"]},
-                },
-                "required": ["User_Intention"],
-            },
-        },
-        "response": {
-            "name": "Describer",
-            "description": "Respond appropriately to the following customer 'Reviews'.",
-            "parameters": {
-                "type": "object",
-                "properties": {"Response": {"type": "string"}},
-                "required": ["Response"],
-            },
-        },
-        "urgency_level": {
-            "name": "Describer",
-            "description": "Determine how urgent a given customer's 'Review' is.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "Urgency_Level": {"type": "string", "enum": ["Urgent", "Medium", "Not Urgent"]},
-                },
-                "required": ["Urgency_Level"],
-            },
-        },
-        "zero_response": {
-            "name": "Describer",
-            "description": "Respond appropriately to the following customer 'Reviews'",
-            "parameters": {
-                "type": "object",
-                "properties": {"Response": {"type": "string", "description": "Response to Customer Review"}},
-                "required": ["Response"],
-            },
-        },
-        "total_extraction": {
-            "name": "Describer",
-            "description": "Analyze the following Review",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "User_Sentiment": {"type": "string", "enum": ["Positive", "Neutral", "Negative"]},
-                    "User_Emotion": {"type": "string", "enum": ["Anger", "Disgust", "Fear", "Happiness", "Contempt", "Sadness", "Surprise", "Neutral"]},
-                    "User_Intention": {"type": "string", "enum": ["Complaint", "Expressing Dissatisfaction", "Warning Others", "Feedback", "Sharing Experience", "Expressing Satisfaction", "Praise", "Recommendation"]},
-                },
-                "required": ["User_Sentiment", "User_Emotion", "User_Intention"],
-            },
-        },
-    }
-
-    if prompt_name not in functions:
-        raise ValueError(f"Invalid prompt_name: {prompt_name}. Choose from {list(functions.keys())}")
-
-    return functions[prompt_name]
+    return result
